@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}match{% endblock %}
+
+{% block body %}
+    <div class="header">
+        <div class="search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" placeholder="検索">
+        </div>
+        <div class="profile-icon">
+            <a href="{{ url_for('user_detail',name=)}}"><span class="material-symbols-outlined">home</span></a>
+        </div>
+    </div>
+{% endblock%}
