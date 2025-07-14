@@ -364,7 +364,7 @@
                     <button class="tab" onclick="switchTab('register')">新規登録</button>
                 </div>
                 
-                <form id="loginForm" class="form">
+                <form id="loginForm" class="form" action="{{ url_for('home_match')}}" method="POST">
                     <div class="input-group">
                         <input type="email" id="loginEmail" placeholder=" " required>
                         <label for="loginEmail">メールアドレス</label>
@@ -379,7 +379,7 @@
                     </div>
                 </form>
                 
-                <form id="registerForm" class="form" style="display: none;">
+                <form id="registerForm" class="form" style="display: none;" action="{{ url_for('singin') }}" method="POST">
                     <div class="input-group">
                         <input type="text" id="registerName" placeholder=" " required>
                         <label for="registerName">お名前</label>
