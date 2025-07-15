@@ -52,6 +52,12 @@ class RegistrationForm(FlaskForm):
         ('大学院', '大学院')
     ], validators=[DataRequired(message='学部を選択してください')])
     
+    gender = SelectField('性別', choices=[
+        ('', '選択してください'),
+        ('0', '男性'),
+        ('1', '女性')
+    ], validators=[DataRequired(message='性別を選択してください')])
+
     time = StringField('時間割', validators=[
         DataRequired(message='時間割を入力してください'),
         Length(max=100, message='時間割は100文字以内で入力してください')

@@ -553,6 +553,120 @@
                 }, 5000);
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.querySelector('input[name="email"]');
+    const emailGroup = emailInput.parentElement;
+    
+    // デバウンス関数（連続した入力を制御）
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // メールアドレスの重複チェック関数
+    async function checkEmailDuplicate(email) {
+        if (!email || !email.includes('@')) {
+            return; // 無効なメールアドレスの場合は何もしない
+        }
+        
+        try {
+            const response = await fetch('/check-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            const data = await response.json();
+            
+            // 既存のエラーメッセージを削除
+            const existingError = emailGroup.querySelector('.email-duplicate-error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            if (data.exists) {
+                // 重複している場合
+                emailGroup.classList.add('has-error');
+                emailInput.style.borderColor = '#dc3545';
+                
+                // エラーメッセージを表示
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error email-duplicate-error';
+                errorDiv.textContent = data.message;
+                emailGroup.appendChild(errorDiv);
+            } else {
+                // 利用可能な場合
+                emailGroup.classList.remove('has-error');
+                emailInput.style.borderColor = '#28a745'; // 緑色で表示
+                
+                // 成功メッセージを表示（オプション）
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success email-duplicate-success';
+                successDiv.style.color = '#28a745';
+                successDiv.style.fontSize = '0.8rem';
+                successDiv.style.marginTop = '0.5rem';
+                successDiv.style.textAlign = 'left';
+                successDiv.style.paddingLeft = '1rem';
+                successDiv.textContent = '利用可能なメールアドレスです';
+                emailGroup.appendChild(successDiv);
+                
+                // 2秒後に成功メッセージを削除
+                setTimeout(() => {
+                    if (successDiv.parentElement) {
+                        successDiv.remove();
+                    }
+                    emailInput.style.borderColor = '#667eea';
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('メールアドレスのチェック中にエラーが発生しました:', error);
+        }
+    }
+    
+    // デバウンス付きのチェック関数
+    const debouncedCheck = debounce(checkEmailDuplicate, 1000);
+    
+    // メールアドレス入力フィールドにイベントリスナーを追加
+    emailInput.addEventListener('input', function() {
+        const email = this.value.trim();
+        
+        // 既存のメッセージをクリア
+        const existingMessages = emailGroup.querySelectorAll('.email-duplicate-error, .email-duplicate-success');
+        existingMessages.forEach(msg => msg.remove());
+        
+        if (email) {
+            debouncedCheck(email);
+        } else {
+            // 入力が空の場合、スタイルをリセット
+            emailGroup.classList.remove('has-error');
+            emailInput.style.borderColor = '#e9ecef';
+        }
+    });
+    
+    // フォーム送信時の最終チェック
+    const form = document.getElementById('registerForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const duplicateError = emailGroup.querySelector('.email-duplicate-error');
+            if (duplicateError) {
+                e.preventDefault();
+                alert('メールアドレスの重複エラーを解決してから送信してください。');
+                return false;
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>

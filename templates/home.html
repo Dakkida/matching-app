@@ -157,6 +157,15 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
+        .flash-messages {
+            list-style: none;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
         .tab {
             flex: 1;
             padding: 1rem;
@@ -364,7 +373,18 @@
                     <button class="tab" onclick="switchTab('register')">新規登録</button>
                 </div>
                 
-                <form id="loginForm" class="form" action="{{ url_for('home_match')}}" method="POST">
+                <!-- Flashメッセージの表示エリアをここに追加 -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul class="flash-messages">
+                            {% for category, message in messages %}
+                                <li class="{{ category }}">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+
+                <form id="loginForm" class="form" action="{{ url_for('home')}}" method="POST">
                     <div class="input-group">
                         <input type="email" id="loginEmail" name="loginEmail" placeholder=" " required>
                         <label for="loginEmail">メールアドレス</label>
