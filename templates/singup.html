@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkU - 素敵な出会いを見つけよう</title>
+    <title>LinkU - 会員登録</title>
     <style>
         * {
             margin: 0;
@@ -134,49 +134,22 @@
             background: white;
             border-radius: 0 20px 20px 0;
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 100vh;
         }
 
         .form-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
+            padding: 1rem 0;
         }
 
         .form-title {
             font-size: 2rem;
             color: #333;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-weight: 600;
-        }
-
-        .form-tabs {
-            display: flex;
-            margin-bottom: 2rem;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 1rem;
-            background: #f8f9fa;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .tab:hover:not(.active) {
-            background: #e9ecef;
-            transform: translateY(-1px);
         }
 
         .form {
@@ -197,7 +170,7 @@
             position: relative;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 1rem 1.5rem;
             border: 2px solid #e9ecef;
@@ -207,7 +180,7 @@
             background: white;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -226,11 +199,41 @@
             padding: 0 0.5rem;
         }
 
+        .input-group select + label {
+            top: 0;
+            font-size: 0.8rem;
+            color: #667eea;
+        }
+
         .input-group input:focus + label,
         .input-group input:not(:placeholder-shown) + label {
             top: 0;
             font-size: 0.8rem;
             color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 1.5rem;
+            padding: 0 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            font-size: 1rem;
+            color: #333;
+            cursor: pointer;
+            position: static;
+            transform: none;
+            background: none;
+            padding: 0;
         }
 
         .submit-btn {
@@ -245,6 +248,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 1rem;
         }
 
         .submit-btn:hover {
@@ -256,66 +260,18 @@
             transform: translateY(0);
         }
 
-        .divider {
-            margin: 2rem 0;
-            text-align: center;
-            position: relative;
-            color: #6c757d;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e9ecef;
-        }
-
-        .divider span {
-            background: white;
-            padding: 0 1rem;
-        }
-
-        .social-login {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .social-btn {
-            padding: 0.8rem 1.5rem;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .social-btn:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .forgot-password {
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .forgot-password a {
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
             color: #667eea;
             text-decoration: none;
             font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
 
-        .forgot-password a:hover {
+        .back-link:hover {
             text-decoration: underline;
+            transform: translateX(-5px);
         }
 
         @media (max-width: 768px) {
@@ -330,7 +286,7 @@
             }
 
             .left-section {
-                min-height: 40vh;
+                min-height: 30vh;
             }
 
             .logo {
@@ -339,6 +295,10 @@
 
             .features li {
                 font-size: 1rem;
+            }
+
+            .form-container {
+                max-width: 100%;
             }
         }
     </style>
@@ -352,91 +312,138 @@
                 <li>安全で信頼できるマッチング</li>
                 <li>車持ちか表示</li>
                 <li>AIによる最適なマッチング</li>
+                <li>詳細なプロフィール設定</li>
             </ul>
         </div>
         
         <div class="right-section">
             <div class="form-container">
-                <h2 class="form-title">始めましょう</h2>
+                <a href="#" class="back-link" href="{{ url_for('home') }}">← ログインページに戻る</a>
+                <h2 class="form-title">会員登録</h2>
                 
-                <div class="form-tabs">
-                    <button class="tab active" onclick="switchTab('login')">ログイン</button>
-                    <button class="tab" onclick="switchTab('register')">新規登録</button>
-                </div>
-                
-                <form id="loginForm" class="form" action="{{ url_for('home_match')}}" method="POST">
+                <form id="registerForm" class="form" method="POST">
                     <div class="input-group">
-                        <input type="email" id="loginEmail" name="loginEmail" placeholder=" " required>
-                        <label for="loginEmail">メールアドレス</label>
+                        <input type="text" id="registerName" name="name" placeholder=" " required  >
+                        <label for="registerName">お名前</label>
                     </div>
+                    
                     <div class="input-group">
-                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required>
-                        <label for="loginPassword">パスワード</label>
+                        <input type="email" id="registerEmail" name="email" placeholder=" " required  >
+                        <label for="registerEmail">メールアドレス</label>
                     </div>
-                    <button type="submit" class="submit-btn" name="login_btn">ログイン</button>
-                    <div class="forgot-password">
-                        <a href="#">パスワードを忘れた方</a>
+                    
+                    <div class="input-group">
+                        <input type="password" id="registerPassword" name="password" placeholder=" " required  >
+                        <label for="registerPassword">パスワード</label>
                     </div>
-                </form>
-                
-                <form id="registerForm" class="form" style="display: none;" action="{{ url_for('singup') }}" method="POST">
-                    <h2>今すぐアカウントを作成しましょう！</h2>
-                    <button type="submit" class="submit-btn" name="signup_btn">アカウント作成</button>
+                    
+                    <div class="input-group">
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required >
+                        <label for="confirmPassword">パスワード確認</label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <select id="year" name="year" required>
+                            <option value="">学年を選択してください</option>
+                            <option value="1">1年生</option>
+                            <option value="2">2年生</option>
+                            <option value="3">3年生</option>
+                            <option value="4">4年生</option>
+                            <option value="7">大学院生</option>
+                        </select>
+                        <label for="year">学年</label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <select id="course" name="course" required>
+                            <option value="">学部を選択してください</option>
+                            <option value="人文社会学部">人文社会学部</option>
+                            <option value="国際地域創造学部">国際地域創造学部</option>
+                            <option value="教育学部">教育学部</option>
+                            <option value="理学部">理学部</option>
+                            <option value="医学部">医学部</option>
+                            <option value="工学部">工学部</option>
+                            <option value="農学部">農学部</option>
+                            <option value="大学院">大学院</option>
+                        </select>
+                        <label for="course">学部</label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="time" name="time" placeholder=" " required>
+                        <label for="time">時間割（例：月1水2金3）</label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="hobby" name="hobby" placeholder=" " required>
+                        <label for="hobby">趣味</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="license" name="license" value="true">
+                        <label for="license">運転免許を持っています</label>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="car" name="car" placeholder=" ">
+                        <label for="car">車の車種（持っている場合）</label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">アカウント作成</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        function switchTab(tabName) {
-            const tabs = document.querySelectorAll('.tab');
-            const forms = document.querySelectorAll('.form');
-            
-            tabs.forEach(tab => tab.classList.remove('active'));
-            forms.forEach(form => form.style.display = 'none');
-            
-            if (tabName === 'login') {
-                tabs[0].classList.add('active');
-                document.getElementById('loginForm').style.display = 'block';
-            } else {
-                tabs[1].classList.add('active');
-                document.getElementById('registerForm').style.display = 'block';
-            }
-        }
-
-        function socialLogin(provider) {
-            alert(`${provider}でのログインを開始します`);
-        }
-
         // フォーム送信処理
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            //e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            //if (email && password) {
-            //    alert('ログイン処理を開始します...');
-            //    // ここで実際のログイン処理を実装
-            //}
-        });
-        ///
         document.getElementById('registerForm').addEventListener('submit', function(e) {
-            //e.preventDefault();
+            e.preventDefault();
+            
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const year = document.getElementById('year').value;
+            const course = document.getElementById('course').value;
+            const time = document.getElementById('time').value;
+            const hobby = document.getElementById('hobby').value;
+            const license = document.getElementById('license').checked;
+            const car = document.getElementById('car').value;
             
+            // バリデーション
             if (password !== confirmPassword) {
                 alert('パスワードが一致しません');
                 return;
             }
             
-            //if (name && email && password) {
-            //    alert('アカウント作成を開始します...');
-            //    // ここで実際の登録処理を実装
-            //}
-            //
+            if (!name || !email || !password || !year || !course || !time || !hobby) {
+                alert('必須項目をすべて入力してください');
+                return;
+            }
+            
+            if (license && !car) {
+                const confirmSubmit = confirm('運転免許をお持ちですが、車の情報が入力されていません。このまま登録しますか？');
+                if (!confirmSubmit) {
+                    return;
+                }
+            }
+            
+            // 成功メッセージ
+            alert('アカウント作成を開始します...');
+            
+            // ここで実際の登録処理を実装
+            console.log('登録データ:', {
+                name,
+                email,
+                password,
+                year: parseInt(year),
+                course,
+                time,
+                hobby,
+                license,
+                car: car || null
+            });
         });
 
         // 入力フィールドのアニメーション
@@ -450,6 +457,14 @@
                     this.parentElement.classList.remove('focused');
                 }
             });
+        });
+
+        // 免許チェックボックスの処理
+        document.getElementById('license').addEventListener('change', function() {
+            const carInput = document.getElementById('car');
+            if (this.checked) {
+                carInput.focus();
+            }
         });
     </script>
 </body>

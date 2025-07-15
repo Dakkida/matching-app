@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 
 #LoginManager起動
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'home'
 
 app.secret_key = 'secret_key'
 
@@ -51,7 +51,7 @@ def home():
         return render_template('home.html')
 
     elif request.method == 'POST':
-        if request.form('loginForm'):
+        if 'login_btn' in request.form:
             email = request.form.get('loginEmail')
             password = request.form.get('loginPassword')
             user = Users.query.filter_by(id_mailaddress = email, login_pass=password).first()
@@ -63,24 +63,32 @@ def home():
             else:
                 flash('メールアドレスまたはパスワードが正しくありません')
                 return redirect(url_for('home'))
-        elif request.form('registerForm'):
-            name = request.form.get()
-            email = request.form.get()
-            password = request.form.get()
-            confirmPassword = request.form.get()
-
-            if password != confirmPassword:
-                flash('パスワードが一致しません')
         
+        else:
+            # どちらのフォームも判別できなかった場合（不正なリクエスト）
+            flash('不正なリクエストです')
+            return redirect(url_for('home'))
 
 
 #会員登録画面
-@app.route('/signin')
-def singin():
-    
-
-
-    return render_template('singin.html')
+@app.route('/signup', methods=['GET', 'POST'])
+def singup():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    confirmPassword = request.form.get('confirmPassword')
+    school_year = request.form.get('year')
+    course = request.form.get('course')
+    hobby = request.form.get('hobby')
+    # 現時点ではフォームに 'sex' がないため、追加するかデフォルト/プレースホルダーを設定する必要があります
+    # 仮にsexのデフォルト値を設定します。フォームから取得する方法（例：ラジオボタン）を追加する必要があります。
+    sex = 0 # プレースホルダー: これはフォームから取得する方法を追加する必要があります (例: ラジオボタン)
+    car = request.form.get('car') if request.form.get('license') else None # licenseがtrueの場合のみcarを取得し、それ以外はNone
+    if request.method == "POST":
+        if password != confirmPassword:
+            flash('パスワードが一致しません')
+        
+    return render_template('singup.html')
 
 #マッチング画面
 @app.route('/home')
