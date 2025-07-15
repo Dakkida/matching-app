@@ -274,6 +274,58 @@
             transform: translateX(-5px);
         }
 
+        /* エラーメッセージのスタイル */
+        .error {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: left;
+            padding-left: 1rem;
+        }
+
+        .input-group.has-error input,
+        .input-group.has-error select {
+            border-color: #dc3545;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -318,153 +370,188 @@
         
         <div class="right-section">
             <div class="form-container">
-                <a href="#" class="back-link" href="{{ url_for('home') }}">← ログインページに戻る</a>
+                <a href="{{ url_for('home') }}" class="back-link">← ログインページに戻る</a>
                 <h2 class="form-title">会員登録</h2>
                 
+                <!-- フラッシュメッセージの表示 -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
                 <form id="registerForm" class="form" method="POST">
-                    <div class="input-group">
-                        <input type="text" id="registerName" name="name" placeholder=" " required  >
-                        <label for="registerName">お名前</label>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="input-group {% if form.name.errors %}has-error{% endif %}">
+                        {{ form.name(placeholder=" ", required=true) }}
+                        {{ form.name.label }}
+                        {% if form.name.errors %}
+                            <div class="error">
+                                {% for error in form.name.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="email" id="registerEmail" name="email" placeholder=" " required  >
-                        <label for="registerEmail">メールアドレス</label>
+                    <div class="input-group {% if form.email.errors %}has-error{% endif %}">
+                        {{ form.email(placeholder=" ", required=true) }}
+                        {{ form.email.label }}
+                        {% if form.email.errors %}
+                            <div class="error">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="password" id="registerPassword" name="password" placeholder=" " required  >
-                        <label for="registerPassword">パスワード</label>
+                    <div class="input-group {% if form.password.errors %}has-error{% endif %}">
+                        {{ form.password(placeholder=" ", required=true) }}
+                        {{ form.password.label }}
+                        {% if form.password.errors %}
+                            <div class="error">
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required >
-                        <label for="confirmPassword">パスワード確認</label>
+                    <div class="input-group {% if form.confirm_password.errors %}has-error{% endif %}">
+                        {{ form.confirm_password(placeholder=" ", required=true) }}
+                        {{ form.confirm_password.label }}
+                        {% if form.confirm_password.errors %}
+                            <div class="error">
+                                {% for error in form.confirm_password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <select id="year" name="year" required>
-                            <option value="">学年を選択してください</option>
-                            <option value="1">1年生</option>
-                            <option value="2">2年生</option>
-                            <option value="3">3年生</option>
-                            <option value="4">4年生</option>
-                            <option value="7">大学院生</option>
-                        </select>
-                        <label for="year">学年</label>
+                    <div class="input-group {% if form.year.errors %}has-error{% endif %}">
+                        {{ form.year(required=true) }}
+                        {{ form.year.label }}
+                        {% if form.year.errors %}
+                            <div class="error">
+                                {% for error in form.year.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <select id="course" name="course" required>
-                            <option value="">学部を選択してください</option>
-                            <option value="人文社会学部">人文社会学部</option>
-                            <option value="国際地域創造学部">国際地域創造学部</option>
-                            <option value="教育学部">教育学部</option>
-                            <option value="理学部">理学部</option>
-                            <option value="医学部">医学部</option>
-                            <option value="工学部">工学部</option>
-                            <option value="農学部">農学部</option>
-                            <option value="大学院">大学院</option>
-                        </select>
-                        <label for="course">学部</label>
+                    <div class="input-group {% if form.course.errors %}has-error{% endif %}">
+                        {{ form.course(required=true) }}
+                        {{ form.course.label }}
+                        {% if form.course.errors %}
+                            <div class="error">
+                                {% for error in form.course.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="text" id="time" name="time" placeholder=" " required>
-                        <label for="time">時間割（例：月1水2金3）</label>
+                    <div class="input-group {% if form.time.errors %}has-error{% endif %}">
+                        {{ form.time(placeholder=" ", required=true) }}
+                        {{ form.time.label }}
+                        {% if form.time.errors %}
+                            <div class="error">
+                                {% for error in form.time.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="text" id="hobby" name="hobby" placeholder=" " required>
-                        <label for="hobby">趣味</label>
+                    <div class="input-group {% if form.hobby.errors %}has-error{% endif %}">
+                        {{ form.hobby(placeholder=" ", required=true) }}
+                        {{ form.hobby.label }}
+                        {% if form.hobby.errors %}
+                            <div class="error">
+                                {% for error in form.hobby.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="checkbox-group">
-                        <input type="checkbox" id="license" name="license" value="true">
-                        <label for="license">運転免許を持っています</label>
+                        {{ form.license() }}
+                        {{ form.license.label }}
                     </div>
                     
-                    <div class="input-group">
-                        <input type="text" id="car" name="car" placeholder=" ">
-                        <label for="car">車の車種（持っている場合）</label>
+                    <div class="input-group {% if form.car.errors %}has-error{% endif %}">
+                        {{ form.car(placeholder=" ") }}
+                        {{ form.car.label }}
+                        {% if form.car.errors %}
+                            <div class="error">
+                                {% for error in form.car.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <button type="submit" class="submit-btn">アカウント作成</button>
+                    {{ form.submit(class="submit-btn") }}
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        // フォーム送信処理
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // 入力フィールドのアニメーション（Flask-WTF対応）
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
             
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const year = document.getElementById('year').value;
-            const course = document.getElementById('course').value;
-            const time = document.getElementById('time').value;
-            const hobby = document.getElementById('hobby').value;
-            const license = document.getElementById('license').checked;
-            const car = document.getElementById('car').value;
-            
-            // バリデーション
-            if (password !== confirmPassword) {
-                alert('パスワードが一致しません');
-                return;
-            }
-            
-            if (!name || !email || !password || !year || !course || !time || !hobby) {
-                alert('必須項目をすべて入力してください');
-                return;
-            }
-            
-            if (license && !car) {
-                const confirmSubmit = confirm('運転免許をお持ちですが、車の情報が入力されていません。このまま登録しますか？');
-                if (!confirmSubmit) {
-                    return;
-                }
-            }
-            
-            // 成功メッセージ
-            alert('アカウント作成を開始します...');
-            
-            // ここで実際の登録処理を実装
-            console.log('登録データ:', {
-                name,
-                email,
-                password,
-                year: parseInt(year),
-                course,
-                time,
-                hobby,
-                license,
-                car: car || null
-            });
-        });
-
-        // 入力フィールドのアニメーション
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('focused');
-            });
-            
-            input.addEventListener('blur', function() {
-                if (!this.value) {
-                    this.parentElement.classList.remove('focused');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+                
+                // 初期値がある場合のラベル位置調整
+                if (input.value) {
+                    input.parentElement.classList.add('focused');
                 }
             });
         });
 
         // 免許チェックボックスの処理
-        document.getElementById('license').addEventListener('change', function() {
-            const carInput = document.getElementById('car');
-            if (this.checked) {
-                carInput.focus();
-            }
+        const licenseCheckbox = document.querySelector('input[name="license"]');
+        const carInput = document.querySelector('input[name="car"]');
+        
+        if (licenseCheckbox && carInput) {
+            licenseCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    carInput.focus();
+                }
+            });
+        }
+
+        // フラッシュメッセージの自動消去
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.alert');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
         });
     </script>
 </body>

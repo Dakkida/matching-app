@@ -1,5 +1,5 @@
 from flask import Flask,render_template, request, session ,flash ,url_for ,redirect
-from forms import UserInfoForm
+from forms import RegistrationForm
 from flask_login import  LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -73,22 +73,30 @@ def home():
 #会員登録画面
 @app.route('/signup', methods=['GET', 'POST'])
 def singup():
-    name = request.form.get('name')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    confirmPassword = request.form.get('confirmPassword')
-    school_year = request.form.get('year')
-    course = request.form.get('course')
-    hobby = request.form.get('hobby')
-    # 現時点ではフォームに 'sex' がないため、追加するかデフォルト/プレースホルダーを設定する必要があります
-    # 仮にsexのデフォルト値を設定します。フォームから取得する方法（例：ラジオボタン）を追加する必要があります。
-    sex = 0 # プレースホルダー: これはフォームから取得する方法を追加する必要があります (例: ラジオボタン)
-    car = request.form.get('car') if request.form.get('license') else None # licenseがtrueの場合のみcarを取得し、それ以外はNone
-    if request.method == "POST":
-        if password != confirmPassword:
-            flash('パスワードが一致しません')
+    form = RegistrationForm()
+    
+    if form.validate_on_submit():
+        # 登録処理
+        user_data = {
+            'name': form.name.data,
+            'email': form.email.data,
+            'password': form.password.data,
+            'year': int(form.year.data),
+            'course': form.course.data,
+            'time': form.time.data,
+            'hobby': form.hobby.data,
+            'license': form.license.data,
+            'car': form.car.data or None
+        }
         
-    return render_template('singup.html')
+        # ここでデータベースに保存する処理を実装
+        print(f"登録データ: {user_data}")
+        
+        flash('アカウントが正常に作成されました！', 'success')
+        return redirect(url_for('home_match'))
+    
+    return render_template('singup.html', form=form)
+
 
 #マッチング画面
 @app.route('/home')
