@@ -458,6 +458,18 @@
                             </div>
                         {% endif %}
                     </div>
+
+                    <div class="input-group {% if form.time.errors %}has-error{% endif %}">
+                        {{ form.gender(placeholder=" ",required=true) }}
+                        {{ form.gender.label }}
+                        {% if form.gender.errors %}
+                            <div class="error">
+                                {% for error in form.gender.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                     
                     <div class="input-group {% if form.time.errors %}has-error{% endif %}">
                         {{ form.time(placeholder=" ", required=true) }}

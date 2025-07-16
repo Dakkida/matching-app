@@ -92,7 +92,7 @@ def singup():
                 school_year=int(form.year.data),
                 course=form.course.data,
                 hobby=form.hobby.data,
-                sex=0,  # デフォルト値（実際のフォームに性別フィールドを追加する必要があります）
+                sex=form.gender.data,  # デフォルト値（実際のフォームに性別フィールドを追加する必要があります）
                 car=form.car.data or "なし"
             )
             
@@ -115,6 +115,21 @@ def singup():
             return render_template('singup.html', form=form)
     
     return render_template('singup.html', form=form)
+
+#アップロード画面
+@app.route('/imageupload', methods=['GET', 'POST'])
+def imageupload():
+    if request.method == 'POST':
+        # アップロードされた画像を保存
+        file = request.files['image']
+        if file:
+            filename = file.filename
+            file.save(os.path.join('static/images', filename))
+            return {'message': '画像が正常にアップロードされました。', 'filename': filename}
+        else:
+            return {'error': '画像がアップロードできませんでした。'}
+    else:
+        return render_template('imageupload.html')
 
 
 # メールアドレス重複チェック用のAPIエンドポイント（オプション）
