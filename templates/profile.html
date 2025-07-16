@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkU - プロフィール</title>
+    <style>
+        /* 全体的なリセットと基本スタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px; /* 全体のパディングを追加 */
+        }
+
+        /* メインコンテナ */
+        .profile-container {
+            width: 100%;
+            max-width: 900px; /* 幅を調整 */
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* 角丸にコンテンツがはみ出さないように */
+            min-height: 600px; /* 最小高さを設定 */
+        }
+
+        /* 左側セクション (プロフィール画像) */
+        .left-profile-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 背景グラデーション */
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-image-wrapper {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 5px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.3); /* 外側の光の輪 */
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2); /* 画像がない場合の背景 */
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .default-avatar-icon {
+            width: 80%;
+            height: 80%;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .profile-name-on-image {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        /* 右側セクション (詳細情報) */
+        .right-details-section {
+            flex: 1.5; /* 右側を少し広くする */
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: #333;
+        }
+
+        .details-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 0.8rem 1rem;
+            background-color: #f8faff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-icon {
+            margin-right: 1rem;
+            color: #667eea;
+            font-size: 1.5rem;
+            min-width: 24px; /* アイコンの幅を固定 */
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 80px; /* ラベルの幅を固定 */
+        }
+
+        .detail-value {
+            flex-grow: 1;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            margin-top: 2.5rem;
+            text-align: center;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            margin: 0.5rem;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .profile-container {
+                flex-direction: column;
+                min-height: auto;
+                border-radius: 10px;
+            }
+
+            .left-profile-section {
+                border-radius: 10px 10px 0 0;
+                padding: 1.5rem;
+            }
+
+            .right-details-section {
+                padding: 1.5rem;
+                border-radius: 0 0 10px 10px;
+            }
+
+            .profile-image-wrapper {
+                width: 150px;
+                height: 150px;
+            }
+
+            .profile-name-on-image {
+                font-size: 1.5rem;
+            }
+
+            .details-title {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.6rem 0.8rem;
+            }
+
+            .detail-icon {
+                margin-bottom: 0.5rem;
+            }
+
+            .detail-label {
+                width: 100%;
+                margin-bottom: 0.2rem;
+            }
+
+            .action-button {
+                width: calc(100% - 1rem); /* 左右のmarginを考慮 */
+                display: block;
+                margin: 0.5rem auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- 左側セクション: プロフィール画像と名前 -->
+        <div class="left-profile-section">
+            <div class="profile-image-wrapper">
+                {% if user.image %}
+                    <img src="{{ url_for('static', filename='images/' + user.image) }}" alt="プロフィール画像" class="profile-image">
+                {% else %}
+                    <!-- デフォルトのアバターアイコン (SVG) -->
+                    <svg class="default-avatar-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                {% endif %}
+            </div>
+            <h2 class="profile-name-on-image">{{ user.name }}</h2>
+        </div>
+
+        <!-- 右側セクション: 詳細情報 -->
+        <div class="right-details-section">
+            <h1 class="details-title">プロフィール詳細</h1>
+            
+            <div class="detail-item">
+                <span class="detail-icon">🎓</span>
+                <span class="detail-label">学年:</span>
+                <span class="detail-value">{{ user.school_year }}年生</span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-icon">📚</span>
+                <span class="detail-label">コース:</span>
+                <span class="detail-value">{{ user.course }}</span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-icon">🎨</span>
+                <span class="detail-label">趣味:</span>
+                <span class="detail-value">{{ user.hobby }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-icon">🏫</span>
+                <span class="detail-label">時間割:</span>
+                <span class="detail-value">{{ user.time }}</span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-icon">🚻</span>
+                <span class="detail-label">性別:</span>
+                <span class="detail-value">
+                    {% if user.sex == 0 %}男性{% elif user.sex == 1 %}女性{% else %}未設定{% endif %}
+                </span>
+            </div>
+            
+            <div class="detail-item">
+                <span class="detail-icon">🚗</span>
+                <span class="detail-label">車:</span>
+                {% if user.car != NULL %}
+                    <span class="detail-value">{{ user.car }}</span>
+                {% else %}
+                    <span class="detail-value">無免許⤵️</span>
+                {% endif %}
+            </div>
+
+            <div class="action-buttons">
+                <a href="{{ url_for('home_match') }}" class="action-button">ユーザーホームへ戻る</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

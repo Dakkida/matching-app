@@ -17,7 +17,8 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; 
+            padding: 20px 0; 
             overflow-x: hidden;
         }
 
@@ -25,7 +26,7 @@
             width: 100%;
             max-width: 1200px;
             display: flex;
-            min-height: 100vh;
+            min-height: calc(100vh - 40px);
             position: relative;
         }
 
@@ -128,21 +129,21 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             padding: 2rem;
             background: white;
             border-radius: 0 20px 20px 0;
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
-            max-height: 100vh;
+            max-height: calc(100vh - 40px);
         }
 
         .form-container {
             width: 100%;
             max-width: 450px;
             text-align: center;
-            padding: 1rem 0;
+            padding: 1rem 0 3rem 0;
         }
 
         .form-title {
@@ -172,7 +173,8 @@
 
         .input-group input, .input-group select {
             width: 100%;
-            padding: 1rem 1.5rem;
+            /* パディングを調整してラベルが重ならないようにする */
+            padding: 1.2rem 1.5rem 0.8rem 1.5rem; /* 上部パディングを増やし、下部を減らす */
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 1rem;
@@ -189,28 +191,28 @@
 
         .input-group label {
             position: absolute;
-            top: 50%;
+            /* 修正: ラベルの初期位置を少し上にする */
+            top: 1.2rem; /* inputのpadding-topに合わせる */
             left: 1.5rem;
-            transform: translateY(-50%);
+            transform: translateY(-50%); /* 中央揃えを維持 */
             color: #6c757d;
             pointer-events: none;
             transition: all 0.3s ease;
             background: white;
             padding: 0 0.5rem;
+            z-index: 1; /* ラベルが入力フィールドの上にくるように */
         }
 
-        .input-group select + label {
+        /* JavaScriptで追加される.focusedクラスに対応するラベルのスタイル */
+        .input-group.focused label,
+        .input-group select + label { /* selectはplaceholderがないので常に上 */
             top: 0;
             font-size: 0.8rem;
             color: #667eea;
+            z-index: 2; /* 浮上したラベルがさらに上にくるように */
         }
 
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
-            top: 0;
-            font-size: 0.8rem;
-            color: #667eea;
-        }
+        /* 削除: input:not(:placeholder-shown) + label のルールは不要 */
 
         .checkbox-group {
             display: flex;
@@ -327,6 +329,10 @@
         }
 
         @media (max-width: 768px) {
+              body {
+                padding: 10px 0; /* モバイルではパディングを小さく */
+            }
+            
             .container {
                 flex-direction: column;
                 min-height: auto;
@@ -335,10 +341,15 @@
             .left-section, .right-section {
                 border-radius: 0;
                 padding: 1.5rem;
+                max-height: none; /* モバイルでは高さ制限を解除 */
             }
 
             .left-section {
                 min-height: 30vh;
+            }
+
+            .right-section {
+                min-height: 60vh; /* 最小高さを設定 */
             }
 
             .logo {
@@ -351,7 +362,31 @@
 
             .form-container {
                 max-width: 100%;
+                padding: 1rem 0 2rem 0; /* モバイルでは下部パディングを小さく */
             }
+
+            .input-group {
+                margin-bottom: 1.2rem; /* モバイルでは間隔を小さく */
+            }
+        }
+
+        /* スクロールバーのスタイル調整 */
+        .right-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .right-section::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .right-section::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
@@ -388,7 +423,7 @@
                     {{ form.hidden_tag() }}
                     
                     <div class="input-group {% if form.name.errors %}has-error{% endif %}">
-                        {{ form.name(placeholder=" ", required=true) }}
+                        {{ form.name(required=true) }} {# placeholderを削除 #}
                         {{ form.name.label }}
                         {% if form.name.errors %}
                             <div class="error">
@@ -400,7 +435,7 @@
                     </div>
                     
                     <div class="input-group {% if form.email.errors %}has-error{% endif %}">
-                        {{ form.email(placeholder=" ", required=true) }}
+                        {{ form.email(required=true) }} {# placeholderを削除 #}
                         {{ form.email.label }}
                         {% if form.email.errors %}
                             <div class="error">
@@ -412,7 +447,7 @@
                     </div>
                     
                     <div class="input-group {% if form.password.errors %}has-error{% endif %}">
-                        {{ form.password(placeholder=" ", required=true) }}
+                        {{ form.password(required=true) }} {# placeholderを削除 #}
                         {{ form.password.label }}
                         {% if form.password.errors %}
                             <div class="error">
@@ -424,7 +459,7 @@
                     </div>
                     
                     <div class="input-group {% if form.confirm_password.errors %}has-error{% endif %}">
-                        {{ form.confirm_password(placeholder=" ", required=true) }}
+                        {{ form.confirm_password(required=true) }} {# placeholderを削除 #}
                         {{ form.confirm_password.label }}
                         {% if form.confirm_password.errors %}
                             <div class="error">
@@ -459,8 +494,8 @@
                         {% endif %}
                     </div>
 
-                    <div class="input-group {% if form.time.errors %}has-error{% endif %}">
-                        {{ form.gender(placeholder=" ",required=true) }}
+                    <div class="input-group {% if form.gender.errors %}has-error{% endif %}"> {# form.time -> form.gender #}
+                        {{ form.gender(required=true) }} {# placeholderを削除 #}
                         {{ form.gender.label }}
                         {% if form.gender.errors %}
                             <div class="error">
@@ -472,7 +507,7 @@
                     </div>
                     
                     <div class="input-group {% if form.time.errors %}has-error{% endif %}">
-                        {{ form.time(placeholder=" ", required=true) }}
+                        {{ form.time(required=true) }} {# placeholderを削除 #}
                         {{ form.time.label }}
                         {% if form.time.errors %}
                             <div class="error">
@@ -484,7 +519,7 @@
                     </div>
                     
                     <div class="input-group {% if form.hobby.errors %}has-error{% endif %}">
-                        {{ form.hobby(placeholder=" ", required=true) }}
+                        {{ form.hobby(required=true) }} {# placeholderを削除 #}
                         {{ form.hobby.label }}
                         {% if form.hobby.errors %}
                             <div class="error">
@@ -501,7 +536,7 @@
                     </div>
                     
                     <div class="input-group {% if form.car.errors %}has-error{% endif %}">
-                        {{ form.car(placeholder=" ") }}
+                        {{ form.car() }} {# placeholderを削除 #}
                         {{ form.car.label }}
                         {% if form.car.errors %}
                             <div class="error">
@@ -521,7 +556,7 @@
     <script>
         // 入力フィールドのアニメーション（Flask-WTF対応）
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="number"]'); /* numberタイプも追加 */
             
             inputs.forEach(input => {
                 input.addEventListener('focus', function() {
@@ -538,6 +573,21 @@
                 if (input.value) {
                     input.parentElement.classList.add('focused');
                 }
+            });
+
+            // select要素のラベル位置調整（初期表示時）
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                if (select.value) {
+                    select.parentElement.classList.add('focused');
+                }
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        this.parentElement.classList.add('focused');
+                    } else {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
             });
         });
 
@@ -567,118 +617,149 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-    const emailInput = document.querySelector('input[name="email"]');
-    const emailGroup = emailInput.parentElement;
-    
-    // デバウンス関数（連続した入力を制御）
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    // メールアドレスの重複チェック関数
-    async function checkEmailDuplicate(email) {
-        if (!email || !email.includes('@')) {
-            return; // 無効なメールアドレスの場合は何もしない
-        }
-        
-        try {
-            const response = await fetch('/check-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email })
+            const emailInput = document.querySelector('input[name="email"]');
+            const emailGroup = emailInput.parentElement;
+            
+            // デバウンス関数（連続した入力を制御）
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // メールアドレスの重複チェック関数
+            async function checkEmailDuplicate(email) {
+                if (!email || !email.includes('@')) {
+                    // 既存のメッセージをクリアして、スタイルをリセット
+                    const existingMessages = emailGroup.querySelectorAll('.email-duplicate-error, .email-duplicate-success');
+                    existingMessages.forEach(msg => msg.remove());
+                    emailGroup.classList.remove('has-error');
+                    emailInput.style.borderColor = '#e9ecef';
+                    return; 
+                }
+                
+                try {
+                    const response = await fetch('/check-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // 既存のエラーメッセージを削除
+                    const existingError = emailGroup.querySelector('.email-duplicate-error');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    // 既存の成功メッセージを削除
+                    const existingSuccess = emailGroup.querySelector('.email-duplicate-success');
+                    if (existingSuccess) {
+                        existingSuccess.remove();
+                    }
+                    
+                    if (data.exists) {
+                        // 重複している場合
+                        emailGroup.classList.add('has-error');
+                        emailInput.style.borderColor = '#dc3545';
+                        
+                        // エラーメッセージを表示
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error email-duplicate-error';
+                        errorDiv.textContent = data.message;
+                        emailGroup.appendChild(errorDiv);
+                    } else {
+                        // 利用可能な場合
+                        emailGroup.classList.remove('has-error');
+                        emailInput.style.borderColor = '#28a745'; // 緑色で表示
+                        
+                        // 成功メッセージを表示（オプション）
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'success email-duplicate-success';
+                        successDiv.style.color = '#28a745';
+                        successDiv.style.fontSize = '0.8rem';
+                        successDiv.style.marginTop = '0.5rem';
+                        successDiv.style.textAlign = 'left';
+                        successDiv.style.paddingLeft = '1rem';
+                        successDiv.textContent = '利用可能なメールアドレスです';
+                        emailGroup.appendChild(successDiv);
+                        
+                        // 2秒後に成功メッセージを削除
+                        setTimeout(() => {
+                            if (successDiv.parentElement) {
+                                successDiv.remove();
+                            }
+                            // 成功メッセージ削除後、ボーダーの色をデフォルトに戻す
+                            emailInput.style.borderColor = '#e9ecef'; 
+                        }, 2000);
+                    }
+                    
+                } catch (error) {
+                    console.error('メールアドレスのチェック中にエラーが発生しました:', error);
+                    // エラー発生時もスタイルをリセット
+                    emailGroup.classList.remove('has-error');
+                    emailInput.style.borderColor = '#e9ecef';
+                    const existingMessages = emailGroup.querySelectorAll('.email-duplicate-error, .email-duplicate-success');
+                    existingMessages.forEach(msg => msg.remove());
+                }
+            }
+            
+            // デバウンス付きのチェック関数
+            const debouncedCheck = debounce(checkEmailDuplicate, 1000);
+            
+            // メールアドレス入力フィールドにイベントリスナーを追加
+            emailInput.addEventListener('input', function() {
+                const email = this.value.trim();
+                
+                // 既存のメッセージをクリア
+                const existingMessages = emailGroup.querySelectorAll('.email-duplicate-error, .email-duplicate-success');
+                existingMessages.forEach(msg => msg.remove());
+                
+                if (email) {
+                    debouncedCheck(email);
+                } else {
+                    // 入力が空の場合、スタイルをリセット
+                    emailGroup.classList.remove('has-error');
+                    emailInput.style.borderColor = '#e9ecef';
+                }
             });
             
-            const data = await response.json();
-            
-            // 既存のエラーメッセージを削除
-            const existingError = emailGroup.querySelector('.email-duplicate-error');
-            if (existingError) {
-                existingError.remove();
-            }
-            
-            if (data.exists) {
-                // 重複している場合
-                emailGroup.classList.add('has-error');
-                emailInput.style.borderColor = '#dc3545';
-                
-                // エラーメッセージを表示
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error email-duplicate-error';
-                errorDiv.textContent = data.message;
-                emailGroup.appendChild(errorDiv);
-            } else {
-                // 利用可能な場合
-                emailGroup.classList.remove('has-error');
-                emailInput.style.borderColor = '#28a745'; // 緑色で表示
-                
-                // 成功メッセージを表示（オプション）
-                const successDiv = document.createElement('div');
-                successDiv.className = 'success email-duplicate-success';
-                successDiv.style.color = '#28a745';
-                successDiv.style.fontSize = '0.8rem';
-                successDiv.style.marginTop = '0.5rem';
-                successDiv.style.textAlign = 'left';
-                successDiv.style.paddingLeft = '1rem';
-                successDiv.textContent = '利用可能なメールアドレスです';
-                emailGroup.appendChild(successDiv);
-                
-                // 2秒後に成功メッセージを削除
-                setTimeout(() => {
-                    if (successDiv.parentElement) {
-                        successDiv.remove();
+            // フォーム送信時の最終チェック
+            const form = document.getElementById('registerForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const duplicateError = emailGroup.querySelector('.email-duplicate-error');
+                    if (duplicateError) {
+                        e.preventDefault();
+                        // alertの代わりにカスタムメッセージボックスを使用
+                        const messageBox = document.createElement('div');
+                        messageBox.className = 'alert alert-danger';
+                        messageBox.style.position = 'fixed';
+                        messageBox.style.top = '50%';
+                        messageBox.style.left = '50%';
+                        messageBox.style.transform = 'translate(-50%, -50%)';
+                        messageBox.style.zIndex = '1001';
+                        messageBox.style.width = '300px';
+                        messageBox.style.textAlign = 'center';
+                        messageBox.textContent = 'メールアドレスの重複エラーを解決してから送信してください。';
+                        document.body.appendChild(messageBox);
+
+                        setTimeout(() => {
+                            messageBox.remove();
+                        }, 3000); // 3秒後に自動削除
+                        return false;
                     }
-                    emailInput.style.borderColor = '#667eea';
-                }, 2000);
-            }
-            
-        } catch (error) {
-            console.error('メールアドレスのチェック中にエラーが発生しました:', error);
-        }
-    }
-    
-    // デバウンス付きのチェック関数
-    const debouncedCheck = debounce(checkEmailDuplicate, 1000);
-    
-    // メールアドレス入力フィールドにイベントリスナーを追加
-    emailInput.addEventListener('input', function() {
-        const email = this.value.trim();
-        
-        // 既存のメッセージをクリア
-        const existingMessages = emailGroup.querySelectorAll('.email-duplicate-error, .email-duplicate-success');
-        existingMessages.forEach(msg => msg.remove());
-        
-        if (email) {
-            debouncedCheck(email);
-        } else {
-            // 入力が空の場合、スタイルをリセット
-            emailGroup.classList.remove('has-error');
-            emailInput.style.borderColor = '#e9ecef';
-        }
-    });
-    
-    // フォーム送信時の最終チェック
-    const form = document.getElementById('registerForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const duplicateError = emailGroup.querySelector('.email-duplicate-error');
-            if (duplicateError) {
-                e.preventDefault();
-                alert('メールアドレスの重複エラーを解決してから送信してください。');
-                return false;
+                });
             }
         });
-    }
-});
     </script>
 </body>
 </html>

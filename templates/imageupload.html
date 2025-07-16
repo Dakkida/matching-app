@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkU - プロフィール画像アップロード</title>
+    <style>
+        /* singup.html からコピーしたスタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* container の代わりに right-section をメインコンテナとして使用 */
+        .main-container {
+            flex: 1; /* body の flex item として */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px; /* singup.html の right-section は右側だけ丸いが、こちらは全体を丸く */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* singup.html の right-section の影 */
+            overflow-y: auto;
+            max-height: 90vh; /* 画面に収まるように調整 */
+            width: 100%;
+            max-width: 450px; /* singup.html の form-container の max-width に合わせる */
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 450px; /* main-container と同じ */
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .form {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group input[type="file"] { /* ファイル入力専用のスタイル */
+            width: 100%;
+            padding: 1rem 0.5rem; /* ファイル入力はpaddingを少なめに */
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        .input-group input[type="file"]::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        .input-group input[type="file"]::before {
+            content: 'ファイルを選択';
+            display: inline-block;
+            background: linear-gradient(top, #f9f9f9, #e3e3e3);
+            border: 1px solid #999;
+            border-radius: 5px;
+            padding: 8px 12px;
+            outline: none;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 10pt;
+            margin-right: 10px;
+        }
+        .input-group input[type="file"]:hover::before {
+            border-color: black;
+        }
+        .input-group input[type="file"]:active::before {
+            background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
+        }
+        /* カスタムファイル入力ボタンのスタイル調整 */
+        .custom-file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .custom-file-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+            text-align: left; /* テキストを左寄せに */
+            color: #6c757d;
+        }
+
+        .custom-file-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .custom-file-input-button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: 0 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .custom-file-input-button:hover {
+            opacity: 0.9;
+        }
+
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+            transform: translateX(-5px);
+        }
+
+        /* エラーメッセージのスタイル */
+        .error {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: left;
+            padding-left: 1rem;
+        }
+
+        .input-group.has-error input,
+        .input-group.has-error select {
+            border-color: #dc3545;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger, .alert-warning { /* dangerとwarningを同じスタイルに統合 */
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                border-radius: 0;
+                padding: 1.5rem;
+                max-height: 100vh;
+            }
+            .form-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="form-container">
+            <h2 class="form-title">プロフィール画像をアップロード</h2>
+            
+            <!-- フラッシュメッセージの表示 -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form id="imageUploadForm" class="form" method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <div class="custom-file-input-wrapper">
+                        <input type="file" name="image" id="image" accept="image/*" class="custom-file-input">
+                        <button type="button" class="custom-file-input-button" onclick="document.getElementById('image').click()">
+                            ファイルを選択
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    アップロード
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // フラッシュメッセージの自動消去
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.alert');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+
+        // カスタムファイル入力のファイル名表示
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('image');
+            const customFileInput = document.querySelector('.custom-file-input'); // これがテキスト表示部分
+            
+            if (fileInput && customFileInput) {
+                fileInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        customFileInput.value = this.files[0].name;
+                    } else {
+                        customFileInput.value = ''; // ファイルが選択されていない場合はクリア
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

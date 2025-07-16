@@ -95,14 +95,14 @@
             {% endif %}
         {% endwith %}
 
-        <h1>LinkUへようこそ、{{ user_name }}さん！</h1>
+        <h1>LinkUへようこそ、{{ user.name }}さん！</h1>
         <p>ここでは、あなたの理想の出会いを見つけることができます。</p>
         <p>AIがあなたにぴったりの相手をマッチングします。</p>
 
         <div class="button-group">
             <!-- 修正: 'user_detail' を 'profile' に変更し、name=user_name を追加 -->
             <!--あとでurl_forの中身変更!! -->
-            <a href="{{ url_for('home', name=user_name) }}">プロフィールを見る</a>
+            <a href="{{ url_for('profile', user_id=user.id_mailaddress) }}">プロフィールを見る</a>
             <a href="#">マッチングを開始</a>
             <a href="{{ url_for('home') }}">ログアウト</a>
         </div>
