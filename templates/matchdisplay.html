@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkU - マッチング</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .header-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding-top: 80px;
+        }
+
+        .card-container {
+            position: relative;
+            width: 350px;
+            height: 600px;
+            perspective: 1000px;
+        }
+
+        .profile-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            color: #333;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .profile-card:active {
+            cursor: grabbing;
+        }
+
+        .profile-card.swipe-left {
+            transform: translateX(-100%) rotate(-30deg);
+            opacity: 0;
+        }
+
+        .profile-card.swipe-right {
+            transform: translateX(100%) rotate(30deg);
+            opacity: 0;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 60%;
+            object-fit: cover;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .profile-info {
+            padding: 1.5rem;
+            height: 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .profile-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+
+        .profile-details span {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3rem;
+        }
+
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .nope-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .like-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .no-more-cards {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .no-more-cards h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .no-more-cards p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .swipe-indicator.like {
+            color: #4ecdc4;
+        }
+
+        .swipe-indicator.nope {
+            color: #ff6b6b;
+        }
+
+        .match-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .match-notification.show {
+            opacity: 1;
+        }
+
+        .match-notification h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .match-notification p {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{{url_for('matches')}} "class="header-icon" id="matchListIcon" title="マッチング一覧">
+            💕
+        </a>
+        <div class="logo">LinkU</div>
+        <a href="{{url_for('profile', user_id=user.id_mailaddress)}}" class="header-icon" id="profileIcon" title="プロフィール">
+            👤
+        </a>
+    </div>
+
+    <div class="main-container">
+        <div class="card-container" id="cardContainer">
+            <!-- プロフィールカードがここに動的に追加されます -->
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="action-btn nope-btn" id="nopeBtn">✕</button>
+        <button class="action-btn like-btn" id="likeBtn">♥</button>
+    </div>
+
+    <div class="match-notification" id="matchNotification">
+        <h2>🎉 マッチしました！ 🎉</h2>
+        <p>お互いにLIKEしました</p>
+    </div>
+
+    <script>
+        class MatchingApp {
+            constructor() {
+                this.currentCardIndex = 0;
+                this.viewedProfiles = new Set();
+                this.likedProfiles = new Set();
+                this.matches = new Set();
+                this.currentUser = {
+                    id: 'current_user_id',
+                    name: 'あなた'
+                };
+                
+                // サンプルデータ
+                this.profiles = [
+                    {
+                        id: 1,
+                        name: '田中 美咲',
+                        age: 20,
+                        year: 2,
+                        course: '情報工学科',
+                        hobby: '映画鑑賞、カフェ巡り',
+                        time: '平日の夕方',
+                        image: 'https://images.unsplash.com/photo-1494790108755-2616b332c133?w=400&h=600&fit=crop'
+                    },
+                    {
+                        id: 2,
+                        name: '佐藤 健太',
+                        age: 21,
+                        year: 3,
+                        course: '機械工学科',
+                        hobby: 'スポーツ、読書',
+                        time: '週末',
+                        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop'
+                    },
+                    {
+                        id: 3,
+                        name: '山田 さくら',
+                        age: 19,
+                        year: 1,
+                        course: 'デザイン学科',
+                        hobby: 'アート、音楽',
+                        time: '平日の昼間',
+                        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop'
+                    },
+                    {
+                        id: 4,
+                        name: '鈴木 翔',
+                        age: 22,
+                        year: 4,
+                        course: '経済学科',
+                        hobby: '旅行、料理',
+                        time: '夜の時間',
+                        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop'
+                    },
+                    {
+                        id: 5,
+                        name: '高橋 美穂',
+                        age: 20,
+                        year: 2,
+                        course: '心理学科',
+                        hobby: 'ヨガ、読書',
+                        time: '朝の時間',
+                        image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
+                    }
+                ];
+                
+                this.shuffleProfiles();
+                this.init();
+            }
+
+            shuffleProfiles() {
+                for (let i = this.profiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.profiles[i], this.profiles[j]] = [this.profiles[j], this.profiles[i]];
+                }
+            }
+
+            init() {
+                this.bindEvents();
+                this.showNextCard();
+            }
+
+            bindEvents() {
+                document.getElementById('likeBtn').addEventListener('click', () => this.handleLike());
+                document.getElementById('nopeBtn').addEventListener('click', () => this.handleNope());
+                document.getElementById('profileIcon').addEventListener('click', () => this.goToProfile());
+                document.getElementById('matchListIcon').addEventListener('click', () => this.goToMatchList());
+                
+                // キーボードショートカット
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'l') this.handleLike();
+                    if (e.key === 'ArrowLeft' || e.key === 'n') this.handleNope();
+                });
+            }
+
+            createCard(profile) {
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                card.innerHTML = `
+                    <img src="${profile.image}" alt="${profile.name}" class="profile-image">
+                    <div class="profile-info">
+                        <div class="profile-name">${profile.name}, ${profile.age}</div>
+                        <div class="profile-details">
+                            <span>📚 ${profile.year}年生 - ${profile.course}</span>
+                            <span>🎯 ${profile.hobby}</span>
+                            <span>⏰ ${profile.time}</span>
+                        </div>
+                    </div>
+                    <div class="swipe-indicator" id="swipeIndicator"></div>
+                `;
+                
+                this.addSwipeListeners(card, profile);
+                return card;
+            }
+
+            addSwipeListeners(card, profile) {
+                let startX = 0;
+                let currentX = 0;
+                let isDragging = false;
+
+                card.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    card.style.transition = 'none';
+                });
+
+                card.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    currentX = e.clientX - startX;
+                    const rotation = currentX * 0.1;
+                    card.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
+                    
+                    const indicator = card.querySelector('.swipe-indicator');
+                    if (Math.abs(currentX) > 50) {
+                        indicator.style.opacity = Math.min(Math.abs(currentX) / 150, 1);
+                        if (currentX > 0) {
+                            indicator.textContent = 'LIKE';
+                            indicator.className = 'swipe-indicator like';
+                        } else {
+                            indicator.textContent = 'NOPE';
+                            indicator.className = 'swipe-indicator nope';
+                        }
+                    } else {
+                        indicator.style.opacity = 0;
+                    }
+                });
+
+                card.addEventListener('mouseup', () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    card.style.transition = 'all 0.3s ease';
+                    
+                    if (Math.abs(currentX) > 100) {
+                        if (currentX > 0) {
+                            this.swipeRight(card, profile);
+                        } else {
+                            this.swipeLeft(card, profile);
+                        }
+                    } else {
+                        card.style.transform = 'translateX(0) rotate(0deg)';
+                        card.querySelector('.swipe-indicator').style.opacity = 0;
+                    }
+                    currentX = 0;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.transform = 'translateX(0) rotate(0deg)';
+                        card.querySelector('.swipe-indicator').style.opacity = 0;
+                        currentX = 0;
+                    }
+                });
+            }
+
+            showNextCard() {
+                const container = document.getElementById('cardContainer');
+                
+                if (this.currentCardIndex >= this.profiles.length) {
+                    this.showNoMoreCards();
+                    return;
+                }
+
+                const profile = this.profiles[this.currentCardIndex];
+                if (this.viewedProfiles.has(profile.id)) {
+                    this.currentCardIndex++;
+                    this.showNextCard();
+                    return;
+                }
+
+                const card = this.createCard(profile);
+                container.appendChild(card);
+                
+                // アニメーション効果
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                    card.style.opacity = '1';
+                }, 50);
+            }
+
+            swipeLeft(card, profile) {
+                card.classList.add('swipe-left');
+                this.viewedProfiles.add(profile.id);
+                setTimeout(() => {
+                    card.remove();
+                    this.currentCardIndex++;
+                    this.showNextCard();
+                }, 300);
+            }
+
+            swipeRight(card, profile) {
+                card.classList.add('swipe-right');
+                this.viewedProfiles.add(profile.id);
+                this.likedProfiles.add(profile.id);
+                
+                // マッチング判定（ランダムで30%の確率でマッチ）
+                if (Math.random() < 0.3) {
+                    this.matches.add(profile.id);
+                    this.showMatchNotification(profile);
+                }
+                
+                setTimeout(() => {
+                    card.remove();
+                    this.currentCardIndex++;
+                    this.showNextCard();
+                }, 300);
+            }
+
+            handleLike() {
+                const card = document.querySelector('.profile-card');
+                if (card) {
+                    const profile = this.profiles[this.currentCardIndex];
+                    this.swipeRight(card, profile);
+                }
+            }
+
+            handleNope() {
+                const card = document.querySelector('.profile-card');
+                if (card) {
+                    const profile = this.profiles[this.currentCardIndex];
+                    this.swipeLeft(card, profile);
+                }
+            }
+
+            showMatchNotification(profile) {
+                const notification = document.getElementById('matchNotification');
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            showNoMoreCards() {
+                const container = document.getElementById('cardContainer');
+                container.innerHTML = `
+                    <div class="no-more-cards">
+                        <h2>🎉 お疲れ様でした！</h2>
+                        <p>今日の分のプロフィールを全て見終わりました。<br>
+                        また明日新しい出会いをお楽しみください。</p>
+                        <div style="margin-top: 2rem;">
+                            <p>今日のいいね: ${this.likedProfiles.size}件</p>
+                            <p>マッチ: ${this.matches.size}件</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            goToProfile() {
+                alert('プロフィール画面に移動します');
+                // 実際のアプリケーションでは、プロフィール画面にリダイレクト
+            }
+
+            goToMatchList() {
+                alert(`マッチング一覧画面に移動します\n現在のマッチ数: ${this.matches.size}件`);
+                // 実際のアプリケーションでは、マッチング一覧画面にリダイレクト
+            }
+        }
+
+        // アプリケーション開始
+        document.addEventListener('DOMContentLoaded', () => {
+            new MatchingApp();
+        });
+    </script>
+</body>
+</html>

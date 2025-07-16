@@ -50,7 +50,6 @@ class Users(UserMixin, db.Model):
     course = db.Column(db.String, nullable=False)
     hobby = db.Column(db.String, nullable=False)
     time = db.Column(db.String, nullable=False)
-    # 0が男性、1
     # 0が男性、1が女性
     sex = db.Column(db.Integer, nullable=False)
     car = db.Column(db.String, nullable=False)
@@ -60,6 +59,31 @@ class Users(UserMixin, db.Model):
     def get_id(self):
         # Flask-Loginがユーザーを識別するために使用するIDを返す
         return self.id_mailaddress
+
+# マッチング関連のテーブル定義
+class Matches(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user1_id = db.Column(db.String, db.ForeignKey('users.id_mailaddress'), nullable=False)
+    user2_id = db.Column(db.String, db.ForeignKey('users.id_mailaddress'), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    # リレーションシップ
+    user1 = db.relationship('Users', foreign_keys=[user1_id], backref='matches_as_user1')
+    user2 = db.relationship('Users', foreign_keys=[user2_id], backref='matches_as_user2')
+
+class Swipes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    swiper_id = db.Column(db.String, db.ForeignKey('users.id_mailaddress'), nullable=False)
+    swiped_id = db.Column(db.String, db.ForeignKey('users.id_mailaddress'), nullable=False)
+    is_like = db.Column(db.Boolean, nullable=False)  # True=Like, False=Nope
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    # リレーションシップ
+    swiper = db.relationship('Users', foreign_keys=[swiper_id], backref='swipes_made')
+    swiped = db.relationship('Users', foreign_keys=[swiped_id], backref='swipes_received')
+    
+    # 複合ユニーク制約（同じユーザーが同じ人を2回スワイプできない）
+    __table_args__ = (db.UniqueConstraint('swiper_id', 'swiped_id', name='unique_swipe'),)
 
 # ユーザーローダー関数
 @login_manager.user_loader
@@ -229,6 +253,165 @@ def logout():
     logout_user() # ユーザーをログアウトさせる
     flash('ログアウトしました。', 'info')
     return redirect(url_for('home'))
+
+# マッチング画面を更新
+@app.route('/matchdisplay', methods=['GET', 'POST'])
+@login_required
+def matchdisplay():
+    if request.method == 'POST':
+        # AJAX リクエストの処理
+        data = request.get_json()
+        action = data.get('action')
+        target_user_id = data.get('target_user_id')
+        
+        if action == 'get_next_profile':
+            # 次のプロフィールを取得
+            next_profile = get_next_profile_for_user(current_user.id_mailaddress)
+            if next_profile:
+                return {
+                    'success': True,
+                    'profile': {
+                        'id': next_profile.id_mailaddress,
+                        'name': next_profile.name,
+                        'school_year': next_profile.school_year,
+                        'course': next_profile.course,
+                        'hobby': next_profile.hobby,
+                        'time': next_profile.time,
+                        'image': next_profile.image,
+                        'sex': next_profile.sex
+                    }
+                }
+            else:
+                return {'success': False, 'message': 'No more profiles'}
+        
+        elif action in ['like', 'nope']:
+            # スワイプ記録
+            is_like = action == 'like'
+            swipe_result = record_swipe(current_user.id_mailaddress, target_user_id, is_like)
+            return swipe_result
+    
+    # GET リクエストの場合
+    return render_template('matchdisplay.html', user=current_user)
+
+def get_next_profile_for_user(user_id):
+    """ユーザーがまだスワイプしていない次のプロフィールを取得"""
+    # 既にスワイプしたユーザーのIDを取得
+    swiped_user_ids = db.session.query(Swipes.swiped_id).filter_by(swiper_id=user_id).all()
+    swiped_ids = [row[0] for row in swiped_user_ids]
+    
+    # 自分以外で、まだスワイプしていないユーザーを取得
+    next_user = Users.query.filter(
+        Users.id_mailaddress != user_id,
+        ~Users.id_mailaddress.in_(swiped_ids)
+    ).first()
+    
+    return next_user
+
+def record_swipe(swiper_id, swiped_id, is_like):
+    """スワイプを記録し、マッチングをチェック"""
+    try:
+        # スワイプ記録
+        new_swipe = Swipes(
+            swiper_id=swiper_id,
+            swiped_id=swiped_id,
+            is_like=is_like
+        )
+        db.session.add(new_swipe)
+        
+        is_match = False
+        if is_like:
+            # 相手も自分をlikeしているかチェック
+            mutual_like = Swipes.query.filter_by(
+                swiper_id=swiped_id,
+                swiped_id=swiper_id,
+                is_like=True
+            ).first()
+            
+            if mutual_like:
+                # マッチング成立
+                new_match = Matches(
+                    user1_id=min(swiper_id, swiped_id),  # 小さい方のIDを user1 に
+                    user2_id=max(swiper_id, swiped_id)   # 大きい方のIDを user2 に
+                )
+                db.session.add(new_match)
+                is_match = True
+        
+        db.session.commit()
+        
+        return {
+            'success': True,
+            'is_match': is_match,
+            'message': 'マッチしました！' if is_match else 'スワイプを記録しました'
+        }
+        
+    except Exception as e:
+        db.session.rollback()
+        return {
+            'success': False,
+            'message': f'エラーが発生しました: {str(e)}'
+        }
+
+# マッチング一覧画面
+@app.route('/matches')
+@login_required
+def matches():
+    """現在のユーザーのマッチング一覧を表示"""
+    user_matches = Matches.query.filter(
+        (Matches.user1_id == current_user.id_mailaddress) |
+        (Matches.user2_id == current_user.id_mailaddress)
+    ).all()
+    
+    # マッチした相手の情報を取得
+    matched_users = []
+    for match in user_matches:
+        if match.user1_id == current_user.id_mailaddress:
+            matched_users.append(match.user2)
+        else:
+            matched_users.append(match.user1)
+    
+    return render_template('matches.html', matches=matched_users, user=current_user)
+
+
+# API: 次のプロフィールを取得
+@app.route('/api/next-profile')
+@login_required
+def api_next_profile():
+    """AJAX用の次のプロフィール取得API"""
+    next_profile = get_next_profile_for_user(current_user.id_mailaddress)
+    
+    if next_profile:
+        return {
+            'success': True,
+            'profile': {
+                'id': next_profile.id_mailaddress,
+                'name': next_profile.name,
+                'school_year': next_profile.school_year,
+                'course': next_profile.course,
+                'hobby': next_profile.hobby,
+                'time': next_profile.time,
+                'image': next_profile.image,
+                'sex': next_profile.sex
+            }
+        }
+    else:
+        return {'success': False, 'message': 'No more profiles'}
+
+# API: スワイプ処理
+@app.route('/api/swipe', methods=['POST'])
+@login_required
+def api_swipe():
+    """AJAX用のスワイプ処理API"""
+    data = request.get_json()
+    target_user_id = data.get('target_user_id')
+    action = data.get('action')  # 'like' or 'nope'
+    
+    if not target_user_id or action not in ['like', 'nope']:
+        return {'success': False, 'message': 'Invalid request'}, 400
+    
+    is_like = action == 'like'
+    result = record_swipe(current_user.id_mailaddress, target_user_id, is_like)
+    
+    return result
 
 if __name__ == '__main__':
     with app.app_context():
