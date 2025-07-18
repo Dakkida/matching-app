@@ -219,13 +219,11 @@
 </head>
 <body>
     <div class="profile-container">
-        <!-- 左側セクション: プロフィール画像と名前 -->
         <div class="left-profile-section">
             <div class="profile-image-wrapper">
                 {% if user.image %}
                     <img src="{{ url_for('static', filename='images/' + user.image) }}" alt="プロフィール画像" class="profile-image">
                 {% else %}
-                    <!-- デフォルトのアバターアイコン (SVG) -->
                     <svg class="default-avatar-icon" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -234,7 +232,6 @@
             <h2 class="profile-name-on-image">{{ user.name }}</h2>
         </div>
 
-        <!-- 右側セクション: 詳細情報 -->
         <div class="right-details-section">
             <h1 class="details-title">プロフィール詳細</h1>
             
@@ -273,11 +270,13 @@
             <div class="detail-item">
                 <span class="detail-icon">🚗</span>
                 <span class="detail-label">車:</span>
-                {% if user.car != NULL %}
-                    <span class="detail-value">{{ user.car }}</span>
-                {% else %}
-                    <span class="detail-value">無免許⤵️</span>
-                {% endif %}
+                <span class="detail-value">
+                    {% if user.car and user.car != "なし" %}
+                        {{ user.car }}
+                    {% else %}
+                        免許なし
+                    {% endif %}
+                </span>
             </div>
 
             <div class="action-buttons">

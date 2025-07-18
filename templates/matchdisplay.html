@@ -72,6 +72,9 @@
             width: 350px;
             height: 600px;
             perspective: 1000px;
+            display: flex; /* 追加: 中央揃えのため */
+            justify-content: center; /* 追加 */
+            align-items: center; /* 追加 */
         }
 
         .profile-card {
@@ -183,6 +186,8 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             backdrop-filter: blur(10px);
+            color: white; /* 追加 */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* 追加 */
         }
 
         .no-more-cards h2 {
@@ -230,12 +235,19 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            /* 非表示状態の開始スタイル */
+            visibility: hidden;
+            transform: translate(-50%, -50%) scale(0.8);
+            pointer-events: none; /* クリックイベントを無効にする */
         }
 
         .match-notification.show {
             opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto; /* クリックイベントを有効にする */
         }
-
+        
         .match-notification h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
@@ -248,7 +260,7 @@
 </head>
 <body>
     <div class="header">
-        <a href="{{url_for('matches')}} "class="header-icon" id="matchListIcon" title="マッチング一覧">
+        <a href="{{url_for('matches')}}" class="header-icon" id="matchListIcon" title="マッチング一覧">
             💕
         </a>
         <div class="logo">LinkU</div>
@@ -259,7 +271,7 @@
 
     <div class="main-container">
         <div class="card-container" id="cardContainer">
-            <!-- プロフィールカードがここに動的に追加されます -->
+            <p style="color: white;">プロフィールを読み込み中...</p>
         </div>
     </div>
 
@@ -276,90 +288,22 @@
     <script>
         class MatchingApp {
             constructor() {
-                this.currentCardIndex = 0;
-                this.viewedProfiles = new Set();
-                this.likedProfiles = new Set();
-                this.matches = new Set();
-                this.currentUser = {
-                    id: 'current_user_id',
-                    name: 'あなた'
-                };
-                
-                // サンプルデータ
-                this.profiles = [
-                    {
-                        id: 1,
-                        name: '田中 美咲',
-                        age: 20,
-                        year: 2,
-                        course: '情報工学科',
-                        hobby: '映画鑑賞、カフェ巡り',
-                        time: '平日の夕方',
-                        image: 'https://images.unsplash.com/photo-1494790108755-2616b332c133?w=400&h=600&fit=crop'
-                    },
-                    {
-                        id: 2,
-                        name: '佐藤 健太',
-                        age: 21,
-                        year: 3,
-                        course: '機械工学科',
-                        hobby: 'スポーツ、読書',
-                        time: '週末',
-                        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop'
-                    },
-                    {
-                        id: 3,
-                        name: '山田 さくら',
-                        age: 19,
-                        year: 1,
-                        course: 'デザイン学科',
-                        hobby: 'アート、音楽',
-                        time: '平日の昼間',
-                        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop'
-                    },
-                    {
-                        id: 4,
-                        name: '鈴木 翔',
-                        age: 22,
-                        year: 4,
-                        course: '経済学科',
-                        hobby: '旅行、料理',
-                        time: '夜の時間',
-                        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop'
-                    },
-                    {
-                        id: 5,
-                        name: '高橋 美穂',
-                        age: 20,
-                        year: 2,
-                        course: '心理学科',
-                        hobby: 'ヨガ、読書',
-                        time: '朝の時間',
-                        image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop'
-                    }
-                ];
-                
-                this.shuffleProfiles();
+                this.currentProfile = null; // 現在表示中のプロフィールデータ
+                this.isLoading = false; // API呼び出し中のフラグ
                 this.init();
-            }
-
-            shuffleProfiles() {
-                for (let i = this.profiles.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [this.profiles[i], this.profiles[j]] = [this.profiles[j], this.profiles[i]];
-                }
             }
 
             init() {
                 this.bindEvents();
-                this.showNextCard();
+                this.loadNextProfile(); // アプリケーション起動時に最初のプロフィールをロード
             }
 
             bindEvents() {
                 document.getElementById('likeBtn').addEventListener('click', () => this.handleLike());
                 document.getElementById('nopeBtn').addEventListener('click', () => this.handleNope());
-                document.getElementById('profileIcon').addEventListener('click', () => this.goToProfile());
-                document.getElementById('matchListIcon').addEventListener('click', () => this.goToMatchList());
+                // プロフィールとマッチング一覧へのリンクは直接HTMLで設定されているため、JSでのリダイレクトは不要
+                // document.getElementById('profileIcon').addEventListener('click', () => this.goToProfile());
+                // document.getElementById('matchListIcon').addEventListener('click', () => this.goToMatchList());
                 
                 // キーボードショートカット
                 document.addEventListener('keydown', (e) => {
@@ -368,17 +312,97 @@
                 });
             }
 
+            async loadNextProfile() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+
+                const container = document.getElementById('cardContainer');
+                container.innerHTML = '<p style="color: white; text-align: center;">プロフィールを読み込み中...</p>';
+                this.currentProfile = null; // 現在のプロフィールをクリア
+
+                try {
+                    const response = await fetch('/api/next-profile');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    if (data.success && data.profile) {
+                        this.currentProfile = data.profile;
+                        container.innerHTML = ''; // ロード中メッセージをクリア
+                        const card = this.createCard(this.currentProfile);
+                        container.appendChild(card);
+                    } else {
+                        this.showNoMoreCards();
+                    }
+                } catch (error) {
+                    console.error('Error loading next profile:', error);
+                    container.innerHTML = '<div class="no-more-cards"><h2>エラーが発生しました</h2><p>プロフィールを読み込めませんでした。<br>コンソールを確認してください。</p></div>';
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
+            async sendSwipeResult(targetUserId, actionType) {
+                if (this.isLoading) return;
+                this.isLoading = true;
+
+                try {
+                    const response = await fetch('/api/swipe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            target_user_id: targetUserId,
+                            action: actionType // 'like' or 'nope'
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    if (data.success) {
+                        if (data.is_match) {
+                            this.showMatchNotification(); // マッチ通知
+                        }
+                        // 次のプロフィールをロード
+                        await this.loadNextProfile();
+                    } else {
+                        console.error('Swipe failed:', data.message);
+                        alert('スワイプ処理中にエラーが発生しました: ' + data.message);
+                        // エラー時は現在のカードを元に戻すなどの処理
+                        await this.loadNextProfile(); // エラーでも次のプロフィールを試す
+                    }
+                } catch (error) {
+                    console.error('Network error during swipe:', error);
+                    alert('ネットワークエラーが発生しました。もう一度お試しください。');
+                    await this.loadNextProfile(); // エラーでも次のプロフィールを試す
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+
             createCard(profile) {
                 const card = document.createElement('div');
                 card.className = 'profile-card';
+                // 画像パスをFlaskのstaticフォルダから取得するように変更
+                const imageUrl = profile.image ? `{{ url_for('static', filename='images/') }}${profile.image}` : `{{ url_for('static', filename='images/default_profile.png') }}`; 
+                
+                // 性別の表示を調整
+                const genderDisplay = profile.sex === 0 ? '男性' : (profile.sex === 1 ? '女性' : '未設定');
+
                 card.innerHTML = `
-                    <img src="${profile.image}" alt="${profile.name}" class="profile-image">
+                    <img src="${imageUrl}" alt="${profile.name}" class="profile-image">
                     <div class="profile-info">
-                        <div class="profile-name">${profile.name}, ${profile.age}</div>
+                        <div class="profile-name">${profile.name}, ${profile.school_year}年生</div>
                         <div class="profile-details">
-                            <span>📚 ${profile.year}年生 - ${profile.course}</span>
+                            <span>📚 ${profile.course}</span>
                             <span>🎯 ${profile.hobby}</span>
                             <span>⏰ ${profile.time}</span>
+                            <span>🚻 ${genderDisplay}</span>
                         </div>
                     </div>
                     <div class="swipe-indicator" id="swipeIndicator"></div>
@@ -449,76 +473,41 @@
                 });
             }
 
-            showNextCard() {
-                const container = document.getElementById('cardContainer');
-                
-                if (this.currentCardIndex >= this.profiles.length) {
-                    this.showNoMoreCards();
-                    return;
-                }
-
-                const profile = this.profiles[this.currentCardIndex];
-                if (this.viewedProfiles.has(profile.id)) {
-                    this.currentCardIndex++;
-                    this.showNextCard();
-                    return;
-                }
-
-                const card = this.createCard(profile);
-                container.appendChild(card);
-                
-                // アニメーション効果
-                setTimeout(() => {
-                    card.style.transform = 'scale(1)';
-                    card.style.opacity = '1';
-                }, 50);
-            }
-
             swipeLeft(card, profile) {
                 card.classList.add('swipe-left');
-                this.viewedProfiles.add(profile.id);
                 setTimeout(() => {
                     card.remove();
-                    this.currentCardIndex++;
-                    this.showNextCard();
+                    this.sendSwipeResult(profile.id, 'nope');
                 }, 300);
             }
 
             swipeRight(card, profile) {
                 card.classList.add('swipe-right');
-                this.viewedProfiles.add(profile.id);
-                this.likedProfiles.add(profile.id);
-                
-                // マッチング判定（ランダムで30%の確率でマッチ）
-                if (Math.random() < 0.3) {
-                    this.matches.add(profile.id);
-                    this.showMatchNotification(profile);
-                }
-                
                 setTimeout(() => {
                     card.remove();
-                    this.currentCardIndex++;
-                    this.showNextCard();
+                    this.sendSwipeResult(profile.id, 'like');
                 }, 300);
             }
 
             handleLike() {
-                const card = document.querySelector('.profile-card');
-                if (card) {
-                    const profile = this.profiles[this.currentCardIndex];
-                    this.swipeRight(card, profile);
+                if (this.currentProfile && !this.isLoading) {
+                    const card = document.querySelector('.profile-card');
+                    if (card) {
+                        this.swipeRight(card, this.currentProfile);
+                    }
                 }
             }
 
             handleNope() {
-                const card = document.querySelector('.profile-card');
-                if (card) {
-                    const profile = this.profiles[this.currentCardIndex];
-                    this.swipeLeft(card, profile);
+                if (this.currentProfile && !this.isLoading) {
+                    const card = document.querySelector('.profile-card');
+                    if (card) {
+                        this.swipeLeft(card, this.currentProfile);
+                    }
                 }
             }
 
-            showMatchNotification(profile) {
+            showMatchNotification() {
                 const notification = document.getElementById('matchNotification');
                 notification.classList.add('show');
                 
@@ -535,21 +524,9 @@
                         <p>今日の分のプロフィールを全て見終わりました。<br>
                         また明日新しい出会いをお楽しみください。</p>
                         <div style="margin-top: 2rem;">
-                            <p>今日のいいね: ${this.likedProfiles.size}件</p>
-                            <p>マッチ: ${this.matches.size}件</p>
-                        </div>
+                            </div>
                     </div>
                 `;
-            }
-
-            goToProfile() {
-                alert('プロフィール画面に移動します');
-                // 実際のアプリケーションでは、プロフィール画面にリダイレクト
-            }
-
-            goToMatchList() {
-                alert(`マッチング一覧画面に移動します\n現在のマッチ数: ${this.matches.size}件`);
-                // 実際のアプリケーションでは、マッチング一覧画面にリダイレクト
             }
         }
 

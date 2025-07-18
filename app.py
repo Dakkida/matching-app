@@ -108,7 +108,8 @@ def home():
                 flash('ログインに成功しました', 'success')
                 session['user_name'] = user.name
                 # ログイン成功後、マッチング画面にリダイレクト
-                return redirect(url_for('home_match')) # nameパラメータは不要
+                # match.html はユーザーへの歓迎画面。実際のマッチングは matchdisplay.html
+                return redirect(url_for('home_match')) 
             else:
                 flash('メールアドレスまたはパスワードが正しくありません', 'danger')
                 return redirect(url_for('home'))
@@ -140,7 +141,7 @@ def singup():
                 course=form.course.data,
                 hobby=form.hobby.data,
                 time=form.time.data,
-                sex=form.gender.data,  # フォームに性別フィールドを追加してください
+                sex=int(form.gender.data),  # ここもint型に変換
                 car=form.car.data or "なし", # carが空の場合のデフォルト値
                 image=None # 初期状態では画像なし
             )
@@ -227,13 +228,13 @@ def check_email():
     
     return {'exists': False, 'message': 'このメールアドレスは利用可能です'}, 200
 
-# マッチング画面
 @app.route('/home_match', methods=['GET', 'POST']) # ルート名を修正しました
 @login_required
 def home_match():
     # current_userはFlask-Loginによって提供される現在ログイン中のユーザーオブジェクト
     if current_user.is_authenticated:
-        return render_template('match.html', user=current_user) # ユーザーオブジェクトをテンプレートに渡す
+        # マッチング開始ページとして matchdisplay.html にリダイレクト
+        return redirect(url_for('matchdisplay')) 
     else:
         # ログインしていない場合はホーム画面にリダイレクト
         flash('ログインが必要です。', 'info')
@@ -254,43 +255,10 @@ def logout():
     flash('ログアウトしました。', 'info')
     return redirect(url_for('home'))
 
-# マッチング画面を更新
-@app.route('/matchdisplay', methods=['GET', 'POST'])
+# マッチング画面を更新 (GETリクエストのみで動作させる)
+@app.route('/matchdisplay', methods=['GET']) # POSTはAPIエンドポイントに移動
 @login_required
 def matchdisplay():
-    if request.method == 'POST':
-        # AJAX リクエストの処理
-        data = request.get_json()
-        action = data.get('action')
-        target_user_id = data.get('target_user_id')
-        
-        if action == 'get_next_profile':
-            # 次のプロフィールを取得
-            next_profile = get_next_profile_for_user(current_user.id_mailaddress)
-            if next_profile:
-                return {
-                    'success': True,
-                    'profile': {
-                        'id': next_profile.id_mailaddress,
-                        'name': next_profile.name,
-                        'school_year': next_profile.school_year,
-                        'course': next_profile.course,
-                        'hobby': next_profile.hobby,
-                        'time': next_profile.time,
-                        'image': next_profile.image,
-                        'sex': next_profile.sex
-                    }
-                }
-            else:
-                return {'success': False, 'message': 'No more profiles'}
-        
-        elif action in ['like', 'nope']:
-            # スワイプ記録
-            is_like = action == 'like'
-            swipe_result = record_swipe(current_user.id_mailaddress, target_user_id, is_like)
-            return swipe_result
-    
-    # GET リクエストの場合
     return render_template('matchdisplay.html', user=current_user)
 
 def get_next_profile_for_user(user_id):
@@ -416,4 +384,9 @@ def api_swipe():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all() # これがテーブルを作成するコマンドです (初回のみ実行)
+        # 開発中にSwipesテーブルをクリアしたい場合は、以下のコメントを外して一度実行
+        db.session.query(Swipes).delete()
+        db.session.query(Matches).delete()
+        db.session.commit()
+        print("Swipes and Matches tables cleared for testing.")
     app.run(port=8888, debug=True)
