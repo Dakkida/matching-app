@@ -313,7 +313,6 @@
             }
 
             async loadNextProfile() {
-                if (this.isLoading) return;
                 this.isLoading = true;
 
                 const container = document.getElementById('cardContainer');
@@ -473,20 +472,18 @@
                 });
             }
 
-            swipeLeft(card, profile) {
+            async swipeLeft(card, profile) {
                 card.classList.add('swipe-left');
-                setTimeout(() => {
-                    card.remove();
-                    this.sendSwipeResult(profile.id, 'nope');
-                }, 300);
+                await new Promise(resolve => setTimeout(resolve, 300));
+                card.remove();
+                await this.sendSwipeResult(profile.id, 'nope');
             }
 
-            swipeRight(card, profile) {
+            async swipeRight(card, profile) {
                 card.classList.add('swipe-right');
-                setTimeout(() => {
-                    card.remove();
-                    this.sendSwipeResult(profile.id, 'like');
-                }, 300);
+                await new Promise(resolve => setTimeout(resolve, 300));
+                card.remove();
+                await this.sendSwipeResult(profile.id, 'like');
             }
 
             handleLike() {
