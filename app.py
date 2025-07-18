@@ -5,7 +5,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy.exc import IntegrityError # IntegrityError を正しくインポート
+from sqlalchemy.exc import IntegrityError
 import uuid # ユニークなファイル名を生成するために追加
 
 # ==================================================
