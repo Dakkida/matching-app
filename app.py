@@ -228,7 +228,7 @@ def check_email():
     
     return {'exists': False, 'message': 'このメールアドレスは利用可能です'}, 200
 
-@app.route('/home_match', methods=['GET', 'POST']) # ルート名を修正しました
+@app.route('/home_match', methods=['GET', 'POST']) 
 @login_required
 def home_match():
     # current_userはFlask-Loginによって提供される現在ログイン中のユーザーオブジェクト
